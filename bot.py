@@ -23,22 +23,31 @@ def health():
 @app.route("/webhook", methods=["POST"])
 def webhook():
     update = request.get_json(silent=True) or {}
-    message = update.get("message") or {}
 
+    print("RECEIVED UPDATE:", update)
+
+    message = update.get("message") or {}
     text = message.get("text")
 
-    if text:
-        try:
-            requests.post(
-                f"{API}/sendMessage",
-                json={
-                    "chat_id": TARGET,
-                    "text": "📩 پیام ناشناس:\n\n" + text
-                },
-                timeout=20
-            )
-        except Exception as e:
-            print("Soroush API error:", e)
+    if not text:
+        print("NO TEXT FOUND")
+        return "OK", 200
+
+    try:
+        response = requests.post(
+            f"{API}/sendMessage",
+            json={
+                "chat_id": TARGET,
+                "text": "📩 پیام ناشناس:\n\n" + text
+            },
+            timeout=20
+        )
+
+        print("SEND MESSAGE STATUS:", response.status_code)
+        print("SEND MESSAGE RESPONSE:", response.text)
+
+    except Exception as e:
+        print("SOROUSH API ERROR:", repr(e))
 
     return "OK", 200
 
@@ -46,3 +55,5 @@ def webhook():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
+
