@@ -28,11 +28,48 @@ def webhook():
 
     message = update.get("message") or {}
     text = message.get("text")
+    chat = message.get("chat") or {}
 
+    user_id = chat.get("id")
+
+    # پاسخ به دستور /start
+    if text == "/start":
+        welcome_text = (
+            "👋 سلام!\n\n"
+            "اینجا می‌تونی پیام خودت رو به‌صورت ناشناس ارسال کنی.\n\n"
+            "💬 نظرت، پیشنهادت یا پاسخ چالش رو همین‌جا تایپ کن و بفرست.\n\n"
+            "📩 پیام شما بدون نمایش هویت برای مدیر ارسال می‌شود."
+        )
+
+        try:
+            response = requests.post(
+                f"{API}/sendMessage",
+                json={
+                    "chat_id": user_id,
+                    "text": welcome_text
+                },
+                timeout=20
+            )
+
+            print("START RESPONSE STATUS:", response.status_code)
+            print("START RESPONSE:", response.text)
+
+        except Exception as e:
+            print("SOROUSH API ERROR:", repr(e))
+
+        return "OK", 200
+
+    # اگر پیام متنی نیست، کاری انجام نده
     if not text:
         print("NO TEXT FOUND")
         return "OK", 200
 
+    # جلوگیری از ارسال پیام خود مدیر به خودش
+    if user_id == TARGET:
+        print("MESSAGE FROM ADMIN - NOT FORWARDED")
+        return "OK", 200
+
+    # ارسال پیام ناشناس به مدیر
     try:
         response = requests.post(
             f"{API}/sendMessage",
