@@ -5,7 +5,7 @@ const status =
     document.getElementById("status");
 
 
-alert("TEST 2 - app.js جدید");
+alert("TEST 3 - app.js جدید");
 
 
 sendButton.addEventListener("click", async () => {
@@ -13,38 +13,29 @@ sendButton.addEventListener("click", async () => {
     sendButton.disabled = true;
 
     status.textContent =
-        "TEST 2: در حال اتصال به Render...";
+        "در حال ارسال درخواست به Render...";
 
 
     try {
 
-        const response =
-            await fetch(
-                "https://soroush-anonymous-bot.onrender.com/health",
-                {
-                    method: "GET",
-                    mode: "cors",
-                    cache: "no-store"
-                }
-            );
-
-
-        const text =
-            await response.text();
+        await fetch(
+            "https://soroush-anonymous-bot.onrender.com/health",
+            {
+                method: "GET",
+                mode: "no-cors",
+                cache: "no-store"
+            }
+        );
 
 
         status.textContent =
-            "TEST 2: اتصال موفق ✅\n" +
-            "Status: " +
-            response.status +
-            "\nResponse: " +
-            text;
+            "درخواست به Render ارسال شد. ✅";
 
 
     } catch (error) {
 
         status.textContent =
-            "TEST 2: خطای اتصال ❌\n\n" +
+            "ارسال درخواست ناموفق بود. ❌\n\n" +
             error.name +
             "\n" +
             error.message;
