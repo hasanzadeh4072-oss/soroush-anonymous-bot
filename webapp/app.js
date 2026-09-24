@@ -1,4 +1,4 @@
-alert("نسخه تست v4");
+alert("نسخه جدید app.js - v5");
 
 const messageTypes =
     document.querySelectorAll(".message-type");
@@ -25,15 +25,11 @@ let username = "";
 try {
     if (
         typeof window.WebApp !== "undefined" &&
-        window.WebApp.initDataUnsafe
+        window.WebApp.initDataUnsafe &&
+        window.WebApp.initDataUnsafe.user
     ) {
-        const user =
-            window.WebApp.initDataUnsafe.user;
-
-        if (user) {
-            username =
-                user.username || "";
-        }
+        username =
+            window.WebApp.initDataUnsafe.user.username || "";
     }
 } catch (error) {
     console.error(
@@ -42,18 +38,11 @@ try {
     );
 }
 
-// تست اطلاعات کاربر
-if (username) {
-    console.log("USERNAME:", username);
-} else {
-    console.log(
-        "USERNAME NOT FOUND",
-        window.WebApp
-    );
-}
+console.log("USERNAME:", username);
 
 // انتخاب نوع پیام
 messageTypes.forEach((button) => {
+
     button.addEventListener("click", () => {
 
         messageTypes.forEach((item) => {
@@ -67,12 +56,15 @@ messageTypes.forEach((button) => {
 
         status.textContent = "";
     });
+
 });
 
 // شمارش حروف
 messageInput.addEventListener("input", () => {
+
     counter.textContent =
         messageInput.value.length;
+
 });
 
 // ارسال پیام
@@ -82,8 +74,10 @@ sendButton.addEventListener("click", async () => {
         messageInput.value.trim();
 
     if (!message) {
+
         status.textContent =
             "لطفاً متن پیام را وارد کنید.";
+
         return;
     }
 
@@ -102,6 +96,7 @@ sendButton.addEventListener("click", async () => {
 
         const response =
             await fetch(API_URL, {
+
                 method: "POST",
 
                 headers: {
@@ -109,17 +104,24 @@ sendButton.addEventListener("click", async () => {
                         "application/json"
                 },
 
-                body: JSON.stringify(data)
+                body:
+                    JSON.stringify(data)
+
             });
 
         const result =
             await response.json();
 
-        if (!response.ok || !result.ok) {
+        if (
+            !response.ok ||
+            !result.ok
+        ) {
+
             throw new Error(
                 result.error ||
                 "ارسال پیام انجام نشد."
             );
+
         }
 
         status.textContent =
@@ -135,7 +137,9 @@ sendButton.addEventListener("click", async () => {
 
         status.textContent =
             "ارسال پیام انجام نشد. دوباره تلاش کنید.";
+
     }
 
     sendButton.disabled = false;
+
 });
