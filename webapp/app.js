@@ -1,190 +1,221 @@
 const messageTypes =
-    document.querySelectorAll(".message-type");
+document.querySelectorAll(".message-type");
+
 
 const messageInput =
-    document.getElementById("message");
+document.getElementById("message");
+
 
 const counter =
-    document.getElementById("count");
+document.getElementById("count");
+
 
 const sendButton =
-    document.getElementById("sendButton");
+document.getElementById("sendButton");
+
 
 const status =
-    document.getElementById("status");
+document.getElementById("status");
 
 
-/* =========================
-   بررسی WebApp سروش‌پلاس
-========================= */
+const API_URL =
+"https://soroush-anonymous.hasanzadeh4072.workers.dev/";
 
-let webApp = null;
-let user = null;
 
+let selectedType = "anonymous";
+
+
+let username = "";
+
+
+// دریافت اطلاعات کاربر از Soroush WebApp
 try {
 
-    if (typeof WebApp !== "undefined") {
-        webApp = WebApp;
-    }
+
+if (
+    typeof Soroush !== "undefined" &&
+    Soroush.WebApp
+) {
+
+    console.log(
+        "Soroush.WebApp: ✅"
+    );
 
     if (
-        webApp &&
-        webApp.initDataUnsafe &&
-        webApp.initDataUnsafe.user
+        Soroush.WebApp.initDataUnsafe &&
+        Soroush.WebApp.initDataUnsafe.user
     ) {
-        user = webApp.initDataUnsafe.user;
+
+        const user =
+            Soroush.WebApp.initDataUnsafe.user;
+
+        username =
+            user.username || "";
+
+        console.log(
+            "USER:",
+            user
+        );
+
+        console.log(
+            "USERNAME:",
+            username
+        );
+
+    } else {
+
+        console.log(
+            "USER INFO: ❌ وجود ندارد"
+        );
+
     }
-
-} catch (error) {
-
-    console.error(
-        "WEBAPP ERROR:",
-        error
-    );
-}
-
-
-/* =========================
-   نمایش اطلاعات برای تست
-========================= */
-
-let debugInfo = "";
-
-if (!webApp) {
-
-    debugInfo =
-        "❌ WebApp پیدا نشد.";
 
 } else {
 
-    const initData =
-        webApp.initData || "";
-
-    const initDataUnsafe =
-        webApp.initDataUnsafe || {};
-
-    const currentUser =
-        initDataUnsafe.user || {};
-
-    debugInfo =
-        "WebApp: ✅\n\n" +
-
-        "Version: " +
-        (webApp.version || "ندارد") +
-        "\n\n" +
-
-        "Platform: " +
-        (webApp.platform || "ندارد") +
-        "\n\n" +
-
-        "initData: " +
-        (initData ? "✅ دریافت شد" : "❌ خالی است") +
-        "\n\n" +
-
-        "initDataUnsafe: " +
-        (webApp.initDataUnsafe ? "✅ وجود دارد" : "❌ وجود ندارد") +
-        "\n\n" +
-
-        "User: " +
-        (initDataUnsafe.user ? "✅ وجود دارد" : "❌ وجود ندارد") +
-        "\n\n" +
-
-        "ID: " +
-        (currentUser.id || "ندارد") +
-        "\n\n" +
-
-        "First Name: " +
-        (currentUser.first_name || "ندارد") +
-        "\n\n" +
-
-        "Username: " +
-        (currentUser.username
-            ? "@" + currentUser.username
-            : "❌ ندارد");
-}
-
-
-/* =========================
-   نمایش تست روی صفحه
-========================= */
-
-if (status) {
-
-    status.textContent =
-        debugInfo;
-
-    status.style.whiteSpace =
-        "pre-line";
-
-    status.style.textAlign =
-        "right";
-
-    status.style.direction =
-        "ltr";
-
-}
-
-
-/* =========================
-   آماده‌سازی WebApp
-========================= */
-
-try {
-
-    if (
-        webApp &&
-        typeof webApp.ready === "function"
-    ) {
-        webApp.ready();
-    }
-
-} catch (error) {
-
-    console.error(
-        "READY ERROR:",
-        error
+    console.log(
+        "Soroush.WebApp: ❌ وجود ندارد"
     );
 
 }
 
 
-/* =========================
-   انتخاب نوع پیام
-========================= */
 
+} catch (error) {
+
+
+console.error(
+    "USER INFO ERROR:",
+    error
+);
+
+
+
+}
+
+
+// انتخاب نوع پیام
 messageTypes.forEach((button) => {
 
-    button.addEventListener("click", () => {
 
-        messageTypes.forEach((item) => {
-            item.classList.remove("active");
-        });
+button.addEventListener("click", () => {
 
-        button.classList.add("active");
-
+    messageTypes.forEach((item) => {
+        item.classList.remove("active");
     });
 
+    button.classList.add("active");
+
+    selectedType =
+        button.dataset.type;
+
+    status.textContent = "";
+
 });
 
 
-/* =========================
-   شمارش حروف
-========================= */
 
+});
+
+
+// شمارش حروف
 messageInput.addEventListener("input", () => {
 
-    counter.textContent =
-        messageInput.value.length;
+
+counter.textContent =
+    messageInput.value.length;
+
+
 
 });
 
 
-/* =========================
-   غیرفعال کردن ارسال
-   در نسخه تست
-========================= */
+// ارسال پیام
+sendButton.addEventListener("click", async () => {
+
+
+const message =
+    messageInput.value.trim();
+
+if (!message) {
+
+    status.textContent =
+        "لطفاً متن پیام را وارد کنید.";
+
+    return;
+
+}
 
 sendButton.disabled = true;
 
-sendButton.textContent =
-    "نسخه آزمایشی";
+status.textContent =
+    "در حال ارسال...";
+
+try {
+
+    const data = {
+        type: selectedType,
+        message: message,
+        username: username
+    };
+
+    console.log(
+        "SEND DATA:",
+        data
+    );
+
+    const response =
+        await fetch(API_URL, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type":
+                    "application/json"
+            },
+
+            body:
+                JSON.stringify(data)
+
+        });
+
+    const result =
+        await response.json();
+
+    if (
+        !response.ok ||
+        !result.ok
+    ) {
+
+        throw new Error(
+            result.error ||
+            "ارسال پیام انجام نشد."
+        );
+
+    }
+
+    status.textContent =
+        "پیامت با موفقیت ارسال شد. ✅";
+
+    messageInput.value = "";
+
+    counter.textContent = "0";
+
+} catch (error) {
+
+    console.error(
+        "SEND ERROR:",
+        error
+    );
+
+    status.textContent =
+        "ارسال پیام انجام نشد. دوباره تلاش کنید.";
+
+}
+
+sendButton.disabled = false;
+
+
+
+});
+
+
