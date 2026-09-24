@@ -39,6 +39,10 @@ def webhook():
     text = message.get("text")
     chat = message.get("chat") or {}
 
+    user = message.get("from") or {}
+
+    print("USER:", user)
+
     user_id = chat.get("id")
 
     # پاسخ به دستور /start
@@ -128,6 +132,3 @@ def webhook():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
-
-
