@@ -1,4 +1,4 @@
-alert("نسخه جدید app.js - v3");
+alert("نسخه تست v4");
 
 const messageTypes =
     document.querySelectorAll(".message-type");
@@ -20,17 +20,20 @@ const API_URL =
 
 let selectedType = "anonymous";
 
-// دریافت اطلاعات کاربر از WebApp
 let username = "";
 
 try {
     if (
-        typeof WebApp !== "undefined" &&
-        WebApp.initDataUnsafe &&
-        WebApp.initDataUnsafe.user
+        typeof window.WebApp !== "undefined" &&
+        window.WebApp.initDataUnsafe
     ) {
-        username =
-            WebApp.initDataUnsafe.user.username || "";
+        const user =
+            window.WebApp.initDataUnsafe.user;
+
+        if (user) {
+            username =
+                user.username || "";
+        }
     }
 } catch (error) {
     console.error(
@@ -39,9 +42,20 @@ try {
     );
 }
 
+// تست اطلاعات کاربر
+if (username) {
+    console.log("USERNAME:", username);
+} else {
+    console.log(
+        "USERNAME NOT FOUND",
+        window.WebApp
+    );
+}
+
 // انتخاب نوع پیام
 messageTypes.forEach((button) => {
     button.addEventListener("click", () => {
+
         messageTypes.forEach((item) => {
             item.classList.remove("active");
         });
@@ -63,6 +77,7 @@ messageInput.addEventListener("input", () => {
 
 // ارسال پیام
 sendButton.addEventListener("click", async () => {
+
     const message =
         messageInput.value.trim();
 
@@ -78,6 +93,7 @@ sendButton.addEventListener("click", async () => {
         "در حال ارسال...";
 
     try {
+
         const data = {
             type: selectedType,
             message: message,
@@ -87,10 +103,12 @@ sendButton.addEventListener("click", async () => {
         const response =
             await fetch(API_URL, {
                 method: "POST",
+
                 headers: {
                     "Content-Type":
                         "application/json"
                 },
+
                 body: JSON.stringify(data)
             });
 
@@ -112,6 +130,7 @@ sendButton.addEventListener("click", async () => {
         counter.textContent = "0";
 
     } catch (error) {
+
         console.error(error);
 
         status.textContent =
