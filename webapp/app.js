@@ -1,33 +1,13 @@
 const sendButton = document.getElementById("sendButton");
 const status = document.getElementById("status");
 
-alert("تست ۴ اجرا شد ✅");
+alert("تست ۵ اجرا شد ✅");
 
-sendButton.addEventListener("click", async () => {
+sendButton.addEventListener("click", () => {
 
-    status.textContent = "در حال تست اتصال...";
+    status.textContent = "در حال باز کردن Render...";
 
-    try {
-
-        const response = await fetch(
-            "https://soroush-anonymous-bot.onrender.com/health",
-            {
-                method: "GET",
-                mode: "cors"
-            }
-        );
-
-        const text = await response.text();
-
-        status.textContent =
-            "اتصال موفق ✅ پاسخ: " + text;
-
-    } catch (error) {
-
-        status.textContent =
-            "اتصال ناموفق ❌ " + error;
-
-        console.error(error);
-    }
+    window.location.href =
+        "https://soroush-anonymous-bot.onrender.com/health";
 
 });
