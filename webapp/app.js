@@ -14,130 +14,206 @@ const status =
     document.getElementById("status");
 
 
+const API_URL =
+    "https://soroush-anonymous-bot.onrender.com/webapp";
+
+
 let selectedType = "anonymous";
+
+
+function getUserInfo() {
+
+    try {
+
+        if (
+            window.SPlus &&
+            window.SPlus.WebApp &&
+            window.SPlus.WebApp.initDataUnsafe &&
+            window.SPlus.WebApp.initDataUnsafe.user
+        ) {
+
+            return window.SPlus.WebApp
+                .initDataUnsafe
+                .user;
+
+        }
+
+
+        if (
+            window.SPlus &&
+            window.SPlus.WebApp &&
+            window.SPlus.WebApp.user
+        ) {
+
+            return window.SPlus.WebApp.user;
+
+        }
+
+
+        if (
+            window.SPlus &&
+            window.SPlus.user
+        ) {
+
+            return window.SPlus.user;
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "USER INFO ERROR:",
+            error
+        );
+
+    }
+
+    return {};
+}
 
 
 // انتخاب نوع پیام
 messageTypes.forEach((button) => {
 
-    button.addEventListener("click", () => {
+    button.addEventListener(
+        "click",
+        () => {
 
-        messageTypes.forEach((item) => {
-            item.classList.remove("active");
-        });
+            messageTypes.forEach((item) => {
 
-        button.classList.add("active");
+                item.classList.remove(
+                    "active"
+                );
 
-        selectedType =
-            button.dataset.type;
+            });
 
-        status.textContent = "";
-    });
+            button.classList.add("active");
+
+            selectedType =
+                button.dataset.type;
+
+            status.textContent = "";
+
+        }
+    );
 
 });
 
 
 // شمارش حروف
-messageInput.addEventListener("input", () => {
+messageInput.addEventListener(
+    "input",
+    () => {
 
-    counter.textContent =
-        messageInput.value.length;
+        counter.textContent =
+            messageInput.value.length;
 
-});
+    }
+);
 
 
 // ارسال پیام
-sendButton.addEventListener("click", async () => {
+sendButton.addEventListener(
+    "click",
+    async () => {
 
-    const message =
-        messageInput.value.trim();
-
-
-    if (!message) {
-
-        status.textContent =
-            "لطفاً متن پیام را وارد کنید.";
-
-        return;
-    }
+        const message =
+            messageInput.value.trim();
 
 
-    sendButton.disabled = true;
+        if (!message) {
 
-    status.textContent =
-        "در حال ارسال...";
+            status.textContent =
+                "لطفاً متن پیام را وارد کنید.";
 
-
-    try {
-
-        /*
-         * اطلاعاتی که برنامک به Python می‌فرستد.
-         *
-         * نوع:
-         * anonymous  = پیام ناشناس
-         * identified = پیام با مشخصات
-         */
-
-        const data = {
-
-            type: selectedType,
-
-            message: message
-
-        };
-
-
-        const response =
-            await fetch("/webapp", {
-
-                method: "POST",
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body: JSON.stringify(data)
-
-            });
-
-
-        const result =
-            await response.json();
-
-
-        if (!response.ok || !result.ok) {
-
-            throw new Error(
-                result.error ||
-                "ارسال پیام انجام نشد."
-            );
+            return;
 
         }
 
 
-        status.textContent =
-            "پیامت با موفقیت ارسال شد. ✅";
-
-
-        messageInput.value = "";
-
-        counter.textContent = "0";
-
-
-    } catch (error) {
-
-        console.error(error);
+        sendButton.disabled = true;
 
         status.textContent =
-            "ارسال پیام انجام نشد. دوباره تلاش کنید.";
+            "در حال ارسال...";
+
+
+        try {
+
+            const user =
+                getUserInfo();
+
+
+            const data = {
+
+                type:
+                    selectedType,
+
+                message:
+                    message,
+
+                user:
+                    selectedType === "identified"
+                        ? user
+                        : {}
+
+            };
+
+
+            const response =
+                await fetch(
+                    API_URL,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(data)
+                    }
+                );
+
+
+            const result =
+                await response.json();
+
+
+            if (
+                !response.ok ||
+                !result.ok
+            ) {
+
+                throw new Error(
+                    result.error ||
+                    "ارسال پیام انجام نشد."
+                );
+
+            }
+
+
+            status.textContent =
+                "پیامت با موفقیت ارسال شد. ✅";
+
+
+            messageInput.value = "";
+
+            counter.textContent =
+                "0";
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            status.textContent =
+                "ارسال پیام انجام نشد. دوباره تلاش کنید.";
+
+        }
+
+
+        sendButton.disabled = false;
 
     }
-
-
-    sendButton.disabled = false;
-
-});
-
-
-
+);
