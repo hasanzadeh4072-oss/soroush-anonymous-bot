@@ -23,15 +23,20 @@ const API_URL =
 
 
 let selectedType = "anonymous";
-
-
 let username = "";
 
 
-// دریافت اطلاعات کاربر از Soroush WebApp
+// ==============================
+// دریافت اطلاعات کاربر
+// ==============================
+
+
 try {
 
 
+let user = null;
+
+// روش رسمی سروش‌پلاس
 if (
     typeof Soroush !== "undefined" &&
     Soroush.WebApp
@@ -46,34 +51,49 @@ if (
         Soroush.WebApp.initDataUnsafe.user
     ) {
 
-        const user =
+        user =
             Soroush.WebApp.initDataUnsafe.user;
 
-        username =
-            user.username || "";
-
-        console.log(
-            "USER:",
-            user
-        );
-
-        console.log(
-            "USERNAME:",
-            username
-        );
-
-    } else {
-
-        console.log(
-            "USER INFO: ❌ وجود ندارد"
-        );
-
     }
+
+}
+
+// سازگاری با WebApp قبلی
+if (
+    !user &&
+    typeof window.WebApp !== "undefined" &&
+    window.WebApp.initDataUnsafe &&
+    window.WebApp.initDataUnsafe.user
+) {
+
+    console.log(
+        "window.WebApp: ✅"
+    );
+
+    user =
+        window.WebApp.initDataUnsafe.user;
+
+}
+
+if (user) {
+
+    username =
+        user.username || "";
+
+    console.log(
+        "USER:",
+        user
+    );
+
+    console.log(
+        "USERNAME:",
+        username
+    );
 
 } else {
 
     console.log(
-        "Soroush.WebApp: ❌ وجود ندارد"
+        "USER INFO: ❌ وجود ندارد"
     );
 
 }
@@ -93,129 +113,165 @@ console.error(
 }
 
 
+// ==============================
 // انتخاب نوع پیام
+// ==============================
+
+
 messageTypes.forEach((button) => {
 
 
-button.addEventListener("click", () => {
+button.addEventListener(
+    "click",
+    () => {
 
-    messageTypes.forEach((item) => {
-        item.classList.remove("active");
-    });
+        messageTypes.forEach(
+            (item) => {
+                item.classList.remove(
+                    "active"
+                );
+            }
+        );
 
-    button.classList.add("active");
+        button.classList.add(
+            "active"
+        );
 
-    selectedType =
-        button.dataset.type;
+        selectedType =
+            button.dataset.type;
 
-    status.textContent = "";
+        status.textContent = "";
+
+    }
+);
+
+
 
 });
 
 
-
-});
-
-
+// ==============================
 // شمارش حروف
-messageInput.addEventListener("input", () => {
+// ==============================
 
 
-counter.textContent =
-    messageInput.value.length;
+messageInput.addEventListener(
+"input",
+() => {
 
 
-
-});
-
-
-// ارسال پیام
-sendButton.addEventListener("click", async () => {
-
-
-const message =
-    messageInput.value.trim();
-
-if (!message) {
-
-    status.textContent =
-        "لطفاً متن پیام را وارد کنید.";
-
-    return;
+    counter.textContent =
+        messageInput.value.length;
 
 }
 
-sendButton.disabled = true;
 
-status.textContent =
-    "در حال ارسال...";
 
-try {
+);
 
-    const data = {
-        type: selectedType,
-        message: message,
-        username: username
-    };
 
-    console.log(
-        "SEND DATA:",
-        data
-    );
+// ==============================
+// ارسال پیام
+// ==============================
 
-    const response =
-        await fetch(API_URL, {
 
-            method: "POST",
+sendButton.addEventListener(
+"click",
+async () => {
 
-            headers: {
-                "Content-Type":
-                    "application/json"
-            },
 
-            body:
-                JSON.stringify(data)
+    const message =
+        messageInput.value.trim();
 
-        });
+    if (!message) {
 
-    const result =
-        await response.json();
+        status.textContent =
+            "لطفاً متن پیام را وارد کنید.";
 
-    if (
-        !response.ok ||
-        !result.ok
-    ) {
-
-        throw new Error(
-            result.error ||
-            "ارسال پیام انجام نشد."
-        );
+        return;
 
     }
 
-    status.textContent =
-        "پیامت با موفقیت ارسال شد. ✅";
-
-    messageInput.value = "";
-
-    counter.textContent = "0";
-
-} catch (error) {
-
-    console.error(
-        "SEND ERROR:",
-        error
-    );
+    sendButton.disabled = true;
 
     status.textContent =
-        "ارسال پیام انجام نشد. دوباره تلاش کنید.";
+        "در حال ارسال...";
+
+    try {
+
+        const data = {
+            type: selectedType,
+            message: message,
+            username: username
+        };
+
+        console.log(
+            "SEND DATA:",
+            data
+        );
+
+        const response =
+            await fetch(
+                API_URL,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(data)
+                }
+            );
+
+        const result =
+            await response.json();
+
+        console.log(
+            "SERVER RESPONSE:",
+            result
+        );
+
+        if (
+            !response.ok ||
+            !result.ok
+        ) {
+
+            throw new Error(
+                result.error ||
+                "ارسال پیام انجام نشد."
+            );
+
+        }
+
+        status.textContent =
+            "پیامت با موفقیت ارسال شد. ✅";
+
+        messageInput.value = "";
+
+        counter.textContent =
+            "0";
+
+    } catch (error) {
+
+        console.error(
+            "SEND ERROR:",
+            error
+        );
+
+        status.textContent =
+            "ارسال پیام انجام نشد. دوباره تلاش کنید.";
+
+    }
+
+    sendButton.disabled =
+        false;
 
 }
 
-sendButton.disabled = false;
 
 
-
-});
-
+);
 
