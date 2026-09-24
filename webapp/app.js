@@ -1,5 +1,3 @@
-alert("APP.JS جدید اجرا شد");
-
 const sendButton =
     document.getElementById("sendButton");
 
@@ -9,24 +7,31 @@ const status =
 
 sendButton.addEventListener("click", async () => {
 
+    sendButton.disabled = true;
+
     status.textContent =
         "در حال اتصال به Render...";
 
 
     try {
 
-        const response = await fetch(
-            "https://soroush-anonymous-bot.onrender.com/health",
-            {
+        const url =
+            "https://soroush-anonymous-bot.onrender.com/health";
+
+
+        console.log("REQUEST URL:", url);
+
+
+        const response =
+            await fetch(url, {
                 method: "GET",
                 mode: "cors",
                 cache: "no-store"
-            }
-        );
+            });
 
 
         console.log(
-            "STATUS:",
+            "HTTP STATUS:",
             response.status
         );
 
@@ -36,27 +41,37 @@ sendButton.addEventListener("click", async () => {
 
 
         console.log(
-            "RESPONSE:",
+            "SERVER RESPONSE:",
             text
         );
 
 
         status.textContent =
-            "اتصال به Render موفق بود. ✅";
+            "اتصال موفق بود ✅\n" +
+            "Status: " +
+            response.status +
+            "\nResponse: " +
+            text;
 
 
     } catch (error) {
 
         console.error(
-            "ERROR:",
+            "FETCH ERROR:",
             error
         );
 
 
         status.textContent =
-            "اتصال به Render انجام نشد. ❌";
+            "خطای واقعی اتصال ❌\n\n" +
+            error.name +
+            "\n" +
+            error.message;
 
     }
+
+
+    sendButton.disabled = false;
 
 });
 
