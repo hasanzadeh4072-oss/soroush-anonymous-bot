@@ -1,1 +1,136 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2f7d5a">
+
+    <title>پیام ناشناس</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<main class="app">
+
+    <section class="card">
+
+        <div class="brand">
+            💬
+        </div>
+
+        <h1>پیام ناشناس</h1>
+
+        <p class="subtitle">
+            پیامت را به شیوه‌ای که می‌خواهی بفرست
+        </p>
+
+
+        <div class="type-section">
+
+            <h2>نوع پیام</h2>
+
+            <div class="options">
+
+                <button
+                    type="button"
+                    class="message-type active"
+                    data-type="anonymous"
+                >
+
+                    <span class="icon">
+                        🕶️
+                    </span>
+
+                    <span class="type-content">
+
+                        <strong>
+                            پیام ناشناس
+                        </strong>
+
+                        <small>
+                            مشخصات فرستنده نمایش داده نمی‌شود
+                        </small>
+
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="message-type"
+                    data-type="identified"
+                >
+
+                    <span class="icon">
+                        👤
+                    </span>
+
+                    <span class="type-content">
+
+                        <strong>
+                            پیام با مشخصات
+                        </strong>
+
+                        <small>
+                            مشخصات فرستنده همراه پیام ثبت می‌شود
+                        </small>
+
+                    </span>
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="message-section">
+
+            <label for="message">
+                متن پیام
+            </label>
+
+            <textarea
+                id="message"
+                maxlength="2000"
+                placeholder="پیام خود را بنویسید..."
+            ></textarea>
+
+            <div class="counter">
+                <span id="count">0</span>
+                / 2000
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            id="sendButton"
+            class="send-button"
+        >
+            ارسال پیام
+        </button>
+
+
+        <p
+            id="status"
+            class="status"
+            aria-live="polite"
+        ></p>
+
+    </section>
+
+</main>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>
+
+
 
