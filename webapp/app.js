@@ -1,3 +1,6 @@
+alert("نسخه ۷ اجرا شد ✅");
+
+
 const messageTypes =
 document.querySelectorAll(".message-type");
 
