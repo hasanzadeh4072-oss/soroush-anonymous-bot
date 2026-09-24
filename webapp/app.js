@@ -5,49 +5,36 @@ const status =
     document.getElementById("status");
 
 
+alert("TEST 2 - app.js جدید");
+
+
 sendButton.addEventListener("click", async () => {
 
     sendButton.disabled = true;
 
     status.textContent =
-        "در حال اتصال به Render...";
+        "TEST 2: در حال اتصال به Render...";
 
 
     try {
 
-        const url =
-            "https://soroush-anonymous-bot.onrender.com/health";
-
-
-        console.log("REQUEST URL:", url);
-
-
         const response =
-            await fetch(url, {
-                method: "GET",
-                mode: "cors",
-                cache: "no-store"
-            });
-
-
-        console.log(
-            "HTTP STATUS:",
-            response.status
-        );
+            await fetch(
+                "https://soroush-anonymous-bot.onrender.com/health",
+                {
+                    method: "GET",
+                    mode: "cors",
+                    cache: "no-store"
+                }
+            );
 
 
         const text =
             await response.text();
 
 
-        console.log(
-            "SERVER RESPONSE:",
-            text
-        );
-
-
         status.textContent =
-            "اتصال موفق بود ✅\n" +
+            "TEST 2: اتصال موفق ✅\n" +
             "Status: " +
             response.status +
             "\nResponse: " +
@@ -56,14 +43,8 @@ sendButton.addEventListener("click", async () => {
 
     } catch (error) {
 
-        console.error(
-            "FETCH ERROR:",
-            error
-        );
-
-
         status.textContent =
-            "خطای واقعی اتصال ❌\n\n" +
+            "TEST 2: خطای اتصال ❌\n\n" +
             error.name +
             "\n" +
             error.message;
