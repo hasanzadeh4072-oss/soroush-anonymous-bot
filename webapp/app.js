@@ -14,7 +14,37 @@ const status =
     document.getElementById("status");
 
 
+const API_URL =
+    "https://soroush-anonymous.hasanzadeh4072.workers.dev/";
+
+
 let selectedType = "anonymous";
+
+
+// دریافت اطلاعات کاربر از WebApp
+let username = "";
+
+try {
+
+    if (
+        typeof WebApp !== "undefined" &&
+        WebApp.initDataUnsafe &&
+        WebApp.initDataUnsafe.user
+    ) {
+
+        username =
+            WebApp.initDataUnsafe.user.username || "";
+
+    }
+
+} catch (error) {
+
+    console.error(
+        "USER INFO ERROR:",
+        error
+    );
+
+}
 
 
 // انتخاب نوع پیام
@@ -46,7 +76,7 @@ messageInput.addEventListener("input", () => {
 });
 
 
-// ارسال پیام - تست اتصال
+// ارسال پیام
 sendButton.addEventListener("click", async () => {
 
     const message =
@@ -65,7 +95,7 @@ sendButton.addEventListener("click", async () => {
     sendButton.disabled = true;
 
     status.textContent =
-        "در حال تست اتصال...";
+        "در حال ارسال...";
 
 
     try {
@@ -74,13 +104,15 @@ sendButton.addEventListener("click", async () => {
 
             type: selectedType,
 
-            message: message
+            message: message,
+
+            username: username
 
         };
 
 
         const response =
-            await fetch("https://httpbin.org/post", {
+            await fetch(API_URL, {
 
                 method: "POST",
 
@@ -98,20 +130,23 @@ sendButton.addEventListener("click", async () => {
             await response.json();
 
 
-        if (!response.ok) {
+        if (!response.ok || !result.ok) {
 
             throw new Error(
-                "HTTP " + response.status
+                result.error ||
+                "ارسال پیام انجام نشد."
             );
 
         }
 
 
-        console.log("HTTPBIN RESPONSE:", result);
-
-
         status.textContent =
-            "اتصال موفق بود. ✅";
+            "پیامت با موفقیت ارسال شد. ✅";
+
+
+        messageInput.value = "";
+
+        counter.textContent = "0";
 
 
     } catch (error) {
@@ -119,7 +154,7 @@ sendButton.addEventListener("click", async () => {
         console.error(error);
 
         status.textContent =
-            "اتصال ناموفق بود. ❌";
+            "ارسال پیام انجام نشد. دوباره تلاش کنید.";
 
     }
 
