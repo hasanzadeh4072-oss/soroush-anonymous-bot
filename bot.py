@@ -10,6 +10,22 @@ TARGET = 203571
 API = f"https://api.splus.ir/bot{TOKEN}"
 
 
+# حالت انتخاب‌شده توسط هر کاربر
+user_modes = {}
+
+
+# کیبورد معمولی پایین صفحه
+KEYBOARD = {
+    "keyboard": [
+        [
+            {"text": "🕵️ پیام ناشناس"},
+            {"text": "👤 پیام با ارسال نام و شناسه کاربری"}
+        ]
+    ],
+    "resize_keyboard": True
+}
+
+
 @app.route("/", methods=["GET"])
 def home():
     return "Anonymous Soroush Bot is running", 200
@@ -29,6 +45,7 @@ def webhook():
     message = update.get("message") or {}
     text = message.get("text")
     chat = message.get("chat") or {}
+    sender = message.get("from") or {}
 
     user_id = chat.get("id")
 
@@ -47,7 +64,8 @@ def webhook():
                 f"{API}/sendMessage",
                 json={
                     "chat_id": user_id,
-                    "text": welcome_text
+                    "text": welcome_text,
+                    "reply_markup": KEYBOARD
                 },
                 timeout=20
             )
@@ -60,6 +78,18 @@ def webhook():
 
         return "OK", 200
 
+    # انتخاب حالت پیام ناشناس
+    if text == "🕵️ پیام ناشناس":
+        user_modes[user_id] = "anonymous"
+        print("USER MODE:", user_id, "anonymous")
+        return "OK", 200
+
+    # انتخاب حالت پیام با نام و شناسه کاربری
+    if text == "👤 پیام با ارسال نام و شناسه کاربری":
+        user_modes[user_id] = "identified"
+        print("USER MODE:", user_id, "identified")
+        return "OK", 200
+
     # اگر پیام متنی نیست
     if not text:
         print("NO TEXT FOUND")
@@ -70,13 +100,61 @@ def webhook():
         print("MESSAGE FROM ADMIN - NOT FORWARDED")
         return "OK", 200
 
-    # ارسال پیام ناشناس به مدیر
+    # حالت فعلی کاربر
+    mode = user_modes.get(user_id, "anonymous")
+
+    # ارسال پیام ناشناس
+    if mode == "anonymous":
+        message_text = (
+            "📩 پیام ناشناس:\n\n"
+            + text
+        )
+
+    # ارسال پیام با مشخصات فرستنده
+    else:
+        first_name = (
+            sender.get("first_name")
+            or chat.get("first_name")
+            or ""
+        )
+
+        last_name = (
+            sender.get("last_name")
+            or chat.get("last_name")
+            or ""
+        )
+
+        username = (
+            sender.get("username")
+            or chat.get("username")
+            or ""
+        )
+
+        full_name = f"{first_name} {last_name}".strip()
+
+        if not full_name:
+            full_name = "نام ثبت نشده"
+
+        if username:
+            username_text = "@" + username
+        else:
+            username_text = "ندارد"
+
+        message_text = (
+            "📩 پیام با مشخصات فرستنده:\n\n"
+            f"👤 نام: {full_name}\n"
+            f"🔗 نام کاربری: {username_text}\n"
+            f"🆔 شناسه: {user_id}\n\n"
+            + text
+        )
+
+    # ارسال پیام به مدیر
     try:
         response = requests.post(
             f"{API}/sendMessage",
             json={
                 "chat_id": TARGET,
-                "text": "📩 پیام ناشناس:\n\n" + text
+                "text": message_text
             },
             timeout=20
         )
