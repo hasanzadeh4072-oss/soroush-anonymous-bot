@@ -1,111 +1,125 @@
-alert("تست نهایی نسخه ۱۰ شروع شد ✅");
+alert("تست نسخه ۱۱ شروع شد ✅");
 
-console.log("========== WEBAPP DEBUG ==========");
-
-const results = [];
-
-function check(name, value) {
-
-    const exists =
-        value !== undefined &&
-        value !== null;
-
-    results.push(
-        name + ": " +
-        (exists ? "✅" : "❌")
-    );
-
-    console.log(
-        name,
-        exists ? value : "NOT FOUND"
-    );
-
-    return exists ? value : null;
-}
+console.log("========== VERSION 11 ==========");
+console.log("window.WebApp:", window.WebApp);
 
 
 // =====================================
-// بررسی تمام APIهای احتمالی
+// بررسی window.WebApp
 // =====================================
 
-const soroush =
-    check(
-        "window.Soroush",
-        window.Soroush
-    );
+const webApp = window.WebApp;
 
-const webApp =
-    soroush
-        ? check(
-            "Soroush.WebApp",
-            soroush.WebApp
-        )
-        : null;
-
-
-const windowWebApp =
-    check(
-        "window.WebApp",
-        window.WebApp
-    );
-
-
-const max =
-    check(
-        "window.WebApp.MAX",
-        window.WebApp &&
-        window.WebApp.MAX
-    );
-
-
-const soroushPlus =
-    check(
-        "window.SoroushPlus",
-        window.SoroushPlus
-    );
-
-
-const miniApp =
-    check(
-        "window.MiniApp",
-        window.MiniApp
-    );
+let initData = "";
+let initDataUnsafe = null;
+let user = null;
 
 
 // =====================================
 // بررسی initData
 // =====================================
 
-let initData = "";
-
-let user = null;
-
-
 if (webApp) {
+
+    console.log(
+        "WebApp موجود است ✅"
+    );
+
 
     initData =
         webApp.initData || "";
 
+
     console.log(
-        "Soroush.WebApp.initData:",
+        "initData:",
         initData
     );
 
 
+    // =================================
+    // بررسی initDataUnsafe
+    // =================================
+
+    initDataUnsafe =
+        webApp.initDataUnsafe || null;
+
+
+    console.log(
+        "initDataUnsafe:",
+        initDataUnsafe
+    );
+
+
+    // =================================
+    // بررسی user
+    // =================================
+
     if (
-        webApp.initDataUnsafe &&
-        webApp.initDataUnsafe.user
+        initDataUnsafe &&
+        initDataUnsafe.user
     ) {
 
         user =
-            webApp.initDataUnsafe.user;
+            initDataUnsafe.user;
+
 
         console.log(
-            "Soroush.WebApp.initDataUnsafe.user:",
+            "USER:",
             user
         );
 
+
+    } else {
+
+        console.log(
+            "initDataUnsafe.user: ❌"
+        );
+
     }
+
+
+} else {
+
+    console.log(
+        "window.WebApp پیدا نشد ❌"
+    );
+
+}
+
+
+// =====================================
+// بررسی مستقیم user
+// =====================================
+
+const directUser =
+    webApp
+        ? webApp.user
+        : null;
+
+
+console.log(
+    "WebApp.user:",
+    directUser
+);
+
+
+// =====================================
+// بررسی username
+// =====================================
+
+let username = "";
+
+if (user) {
+
+    username =
+        user.username || "";
+
+}
+
+if (!username && directUser) {
+
+    username =
+        directUser.username || "";
 
 }
 
@@ -114,90 +128,98 @@ if (webApp) {
 // نمایش نتیجه
 // =====================================
 
-let message =
-    "نتیجه تست نسخه ۱۰\n\n";
+let result =
+    "نتیجه تست نسخه ۱۱\n\n";
 
 
-message +=
-    results.join("\n");
+result +=
+    "window.WebApp: " +
+    (
+        webApp
+            ? "✅ موجود است"
+            : "❌ موجود نیست"
+    );
 
 
-message +=
-    "\n\n--------------------\n";
+result +=
+    "\n\n";
 
 
-message +=
+result +=
     "initData: " +
     (
         initData
-            ? "✅ دریافت شد"
+            ? "✅ موجود است"
             : "❌ خالی است"
     );
 
 
-message +=
-    "\n";
+result +=
+    "\n\n";
 
 
-message +=
-    "user: " +
+result +=
+    "initDataUnsafe: " +
     (
-        user
-            ? "✅ وجود دارد"
+        initDataUnsafe
+            ? "✅ موجود است"
             : "❌ وجود ندارد"
     );
 
 
-message +=
+result +=
     "\n\n";
 
 
-if (user) {
-
-    message +=
-        "username: " +
-        (
-            user.username ||
-            "ثبت نشده"
-        );
-
-}
+result +=
+    "initDataUnsafe.user: " +
+    (
+        user
+            ? "✅ موجود است"
+            : "❌ وجود ندارد"
+    );
 
 
-alert(message);
+result +=
+    "\n\n";
+
+
+result +=
+    "WebApp.user: " +
+    (
+        directUser
+            ? "✅ موجود است"
+            : "❌ وجود ندارد"
+    );
+
+
+result +=
+    "\n\n";
+
+
+result +=
+    "username: " +
+    (
+        username
+            ? "@" + username.replace(/^@/, "")
+            : "❌ ثبت نشده"
+    );
+
+
+alert(result);
 
 
 // =====================================
-// خروجی کامل برای Console
+// چاپ اطلاعات کامل برای Console
 // =====================================
 
 console.log(
-    "========== FINAL RESULT =========="
+    "========== FINAL =========="
 );
 
 console.log(
-    "Soroush:",
-    soroush
-);
-
-console.log(
-    "Soroush.WebApp:",
+    "WebApp:",
     webApp
-);
-
-console.log(
-    "window.WebApp:",
-    windowWebApp
-);
-
-console.log(
-    "SoroushPlus:",
-    soroushPlus
-);
-
-console.log(
-    "MiniApp:",
-    miniApp
 );
 
 console.log(
@@ -206,6 +228,21 @@ console.log(
 );
 
 console.log(
+    "initDataUnsafe:",
+    initDataUnsafe
+);
+
+console.log(
     "user:",
     user
+);
+
+console.log(
+    "directUser:",
+    directUser
+);
+
+console.log(
+    "username:",
+    username
 );
