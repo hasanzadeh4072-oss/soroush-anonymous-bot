@@ -10,7 +10,7 @@ TARGET = 203571
 API = f"https://api.splus.ir/bot{TOKEN}"
 
 
-# حالت انتخاب‌شده توسط هر کاربر
+# پیام با مشخصات فقط برای یک پیام
 user_modes = {}
 
 
@@ -56,6 +56,8 @@ def webhook():
             "💌 اینجا می‌تونی نظرات، پیشنهادات یا هر پیامی که دوست داری رو "
             "به‌صورت ناشناس برای کانال شعرکده ارسال کنی.\n\n"
             "🔐 هویتت برای مدیر کانال نمایش داده نمی‌شه.\n\n"
+            "‼️ **اما هر بار که گزینهٔ «پیام با ارسال نام و شناسه کاربری» رو "
+            "انتخاب کنی، مشخصاتت همراه پیام برای پاسخ‌گویی در اختیار مدیر قرار می‌گیره.**\n\n"
             "@LIFE_M23 | شعرکده"
         )
 
@@ -78,16 +80,57 @@ def webhook():
 
         return "OK", 200
 
-    # انتخاب حالت پیام ناشناس
+    # انتخاب پیام ناشناس
     if text == "🕵️ پیام ناشناس":
-        user_modes[user_id] = "anonymous"
-        print("USER MODE:", user_id, "anonymous")
+        user_modes.pop(user_id, None)
+
+        try:
+            response = requests.post(
+                f"{API}/sendMessage",
+                json={
+                    "chat_id": user_id,
+                    "text": (
+                        "🕵️ پیام ناشناس انتخاب شد.\n\n"
+                        "حالا پیامت رو بفرست."
+                    ),
+                    "reply_markup": KEYBOARD
+                },
+                timeout=20
+            )
+
+            print("MODE RESPONSE STATUS:", response.status_code)
+            print("MODE RESPONSE:", response.text)
+
+        except Exception as e:
+            print("SOROUSH API ERROR:", repr(e))
+
         return "OK", 200
 
-    # انتخاب حالت پیام با نام و شناسه کاربری
+    # انتخاب پیام با نام و شناسه کاربری
     if text == "👤 پیام با ارسال نام و شناسه کاربری":
         user_modes[user_id] = "identified"
-        print("USER MODE:", user_id, "identified")
+
+        try:
+            response = requests.post(
+                f"{API}/sendMessage",
+                json={
+                    "chat_id": user_id,
+                    "text": (
+                        "👤 پیام با ارسال نام و شناسه کاربری انتخاب شد.\n\n"
+                        "مشخصاتت فقط همراه با پیام بعدی برای مدیر ارسال می‌شه.\n\n"
+                        "حالا پیامت رو بفرست."
+                    ),
+                    "reply_markup": KEYBOARD
+                },
+                timeout=20
+            )
+
+            print("MODE RESPONSE STATUS:", response.status_code)
+            print("MODE RESPONSE:", response.text)
+
+        except Exception as e:
+            print("SOROUSH API ERROR:", repr(e))
+
         return "OK", 200
 
     # اگر پیام متنی نیست
@@ -100,17 +143,17 @@ def webhook():
         print("MESSAGE FROM ADMIN - NOT FORWARDED")
         return "OK", 200
 
-    # حالت فعلی کاربر
-    mode = user_modes.get(user_id, "anonymous")
+    # بررسی حالت پیام
+    identified = user_modes.pop(user_id, None) == "identified"
 
     # ارسال پیام ناشناس
-    if mode == "anonymous":
+    if not identified:
         message_text = (
             "📩 پیام ناشناس:\n\n"
             + text
         )
 
-    # ارسال پیام با مشخصات فرستنده
+    # ارسال پیام با مشخصات
     else:
         first_name = (
             sender.get("first_name")
@@ -167,6 +210,9 @@ def webhook():
             confirmation_text = (
                 "پیامت با موفقیت به شعرکده رسید. ✅\n\n"
                 "💌 اگر حرف دیگه‌ای داری، همین‌جا برامون بفرست.\n\n"
+                "‼️ توجه کن: اگر می‌خوای مشخصاتت به مدیر کانال برسه، "
+                "باید قبل از هر پیام گزینهٔ "
+                "«پیام با ارسال نام و شناسه کاربری» رو انتخاب کنی.\n\n"
                 "@LIFE_M23 | شعرکده"
             )
 
@@ -174,7 +220,8 @@ def webhook():
                 f"{API}/sendMessage",
                 json={
                     "chat_id": user_id,
-                    "text": confirmation_text
+                    "text": confirmation_text,
+                    "reply_markup": KEYBOARD
                 },
                 timeout=20
             )
