@@ -1,248 +1,202 @@
-alert("تست نسخه ۱۱ شروع شد ✅");
+alert("تست نهایی نسخه ۱۲ شروع شد ✅");
 
-console.log("========== VERSION 11 ==========");
-console.log("window.WebApp:", window.WebApp);
-
-
-// =====================================
-// بررسی window.WebApp
-// =====================================
+console.log("========== VERSION 12 ==========");
 
 const webApp = window.WebApp;
 
-let initData = "";
-let initDataUnsafe = null;
-let user = null;
+let unsafe = null;
 
 
 // =====================================
-// بررسی initData
+// بررسی WebApp
 // =====================================
 
-if (webApp) {
+if (!webApp) {
 
-    console.log(
-        "WebApp موجود است ✅"
-    );
-
-
-    initData =
-        webApp.initData || "";
-
-
-    console.log(
-        "initData:",
-        initData
-    );
-
-
-    // =================================
-    // بررسی initDataUnsafe
-    // =================================
-
-    initDataUnsafe =
-        webApp.initDataUnsafe || null;
-
-
-    console.log(
-        "initDataUnsafe:",
-        initDataUnsafe
-    );
-
-
-    // =================================
-    // بررسی user
-    // =================================
-
-    if (
-        initDataUnsafe &&
-        initDataUnsafe.user
-    ) {
-
-        user =
-            initDataUnsafe.user;
-
-
-        console.log(
-            "USER:",
-            user
-        );
-
-
-    } else {
-
-        console.log(
-            "initDataUnsafe.user: ❌"
-        );
-
-    }
-
-
-} else {
-
-    console.log(
+    alert(
         "window.WebApp پیدا نشد ❌"
+    );
+
+    throw new Error(
+        "window.WebApp not found"
     );
 
 }
 
 
 // =====================================
-// بررسی مستقیم user
+// دریافت initDataUnsafe
 // =====================================
 
-const directUser =
-    webApp
-        ? webApp.user
-        : null;
+unsafe =
+    webApp.initDataUnsafe || null;
+
+
+if (!unsafe) {
+
+    alert(
+        "initDataUnsafe پیدا نشد ❌"
+    );
+
+    throw new Error(
+        "initDataUnsafe not found"
+    );
+
+}
+
+
+// =====================================
+// بررسی کلیدهای اصلی
+// =====================================
+
+const keys =
+    Object.keys(unsafe);
 
 
 console.log(
-    "WebApp.user:",
-    directUser
+    "initDataUnsafe:",
+    unsafe
+);
+
+console.log(
+    "KEYS:",
+    keys
 );
 
 
 // =====================================
-// بررسی username
+// ساخت گزارش
 // =====================================
 
-let username = "";
+let report =
+    "نتیجه تست نسخه ۱۲\n\n";
 
-if (user) {
 
-    username =
-        user.username || "";
+report +=
+    "window.WebApp: ✅\n\n";
+
+
+report +=
+    "initDataUnsafe: ✅\n\n";
+
+
+report +=
+    "کلیدهای موجود:\n";
+
+
+if (keys.length === 0) {
+
+    report +=
+        "❌ هیچ کلیدی وجود ندارد";
+
+} else {
+
+    keys.forEach(
+        (key) => {
+
+            report +=
+                "• " + key + "\n";
+
+        }
+    );
 
 }
 
-if (!username && directUser) {
 
-    username =
-        directUser.username || "";
+// =====================================
+// بررسی کلیدهای احتمالی کاربر
+// =====================================
 
-}
+report +=
+    "\n--------------------\n\n";
+
+
+const possibleKeys = [
+    "user",
+    "username",
+    "id",
+    "user_id",
+    "userId",
+    "profile",
+    "account",
+    "currentUser",
+    "chat",
+    "sender"
+];
+
+
+possibleKeys.forEach(
+    (key) => {
+
+        if (
+            Object.prototype.hasOwnProperty.call(
+                unsafe,
+                key
+            )
+        ) {
+
+            report +=
+                key +
+                ": ✅ وجود دارد\n";
+
+        } else {
+
+            report +=
+                key +
+                ": ❌\n";
+
+        }
+
+    }
+);
 
 
 // =====================================
 // نمایش نتیجه
 // =====================================
 
-let result =
-    "نتیجه تست نسخه ۱۱\n\n";
-
-
-result +=
-    "window.WebApp: " +
-    (
-        webApp
-            ? "✅ موجود است"
-            : "❌ موجود نیست"
-    );
-
-
-result +=
-    "\n\n";
-
-
-result +=
-    "initData: " +
-    (
-        initData
-            ? "✅ موجود است"
-            : "❌ خالی است"
-    );
-
-
-result +=
-    "\n\n";
-
-
-result +=
-    "initDataUnsafe: " +
-    (
-        initDataUnsafe
-            ? "✅ موجود است"
-            : "❌ وجود ندارد"
-    );
-
-
-result +=
-    "\n\n";
-
-
-result +=
-    "initDataUnsafe.user: " +
-    (
-        user
-            ? "✅ موجود است"
-            : "❌ وجود ندارد"
-    );
-
-
-result +=
-    "\n\n";
-
-
-result +=
-    "WebApp.user: " +
-    (
-        directUser
-            ? "✅ موجود است"
-            : "❌ وجود ندارد"
-    );
-
-
-result +=
-    "\n\n";
-
-
-result +=
-    "username: " +
-    (
-        username
-            ? "@" + username.replace(/^@/, "")
-            : "❌ ثبت نشده"
-    );
-
-
-alert(result);
+alert(report);
 
 
 // =====================================
-// چاپ اطلاعات کامل برای Console
+// گزارش کامل در Console
 // =====================================
 
 console.log(
-    "========== FINAL =========="
+    "========== INIT DATA UNSAFE =========="
 );
 
 console.log(
-    "WebApp:",
-    webApp
+    unsafe
 );
 
 console.log(
-    "initData:",
-    initData
+    "========== KEYS =========="
 );
 
 console.log(
-    "initDataUnsafe:",
-    initDataUnsafe
+    keys
 );
 
 console.log(
-    "user:",
-    user
+    "========== JSON =========="
 );
 
-console.log(
-    "directUser:",
-    directUser
-);
+try {
 
-console.log(
-    "username:",
-    username
-);
+    console.log(
+        JSON.stringify(
+            unsafe,
+            null,
+            2
+        )
+    );
+
+} catch (error) {
+
+    console.log(
+        "JSON ERROR:",
+        error
+    );
+
+}
