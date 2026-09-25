@@ -1,5 +1,6 @@
 import os
 import requests
+import threading
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -45,42 +46,10 @@ def health():
     return "OK", 200
 
 
-@app.route("/card-report", methods=["POST"])
-def card_report():
+def send_card_report_to_admin(report_text):
     """
-    دریافت گزارش کارت شعر از بات کارت شعر.
-    این مسیر هیچ پاسخی به کاربر کارت شعر نمی‌دهد.
+    ارسال گزارش کارت شعر به مدیر در پس‌زمینه.
     """
-
-    provided_secret = request.headers.get("X-Card-Report-Secret", "")
-
-    if provided_secret != CARD_REPORT_SECRET:
-        print("UNAUTHORIZED CARD REPORT")
-        return "Unauthorized", 401
-
-    data = request.get_json(silent=True) or {}
-
-    user_id = data.get("user_id")
-    username = data.get("username") or "ندارد"
-    full_name = data.get("full_name") or "نام ثبت نشده"
-    poem = data.get("poem") or ""
-    design = data.get("design") or "نامشخص"
-    color = data.get("color") or "نامشخص"
-
-    if not user_id or not poem:
-        print("INVALID CARD REPORT:", data)
-        return "Bad Request", 400
-
-    report_text = (
-        "🖼️ کارت شعر جدید\n\n"
-        f"👤 نام: {full_name}\n"
-        f"🔗 نام کاربری: {username}\n"
-        f"🆔 شناسه: {user_id}\n\n"
-        f"🎨 طرح: {design}\n"
-        f"🌈 رنگ: {color}\n\n"
-        "📝 متن شعر:\n"
-        f"{poem}"
-    )
 
     try:
         response = requests.post(
@@ -102,18 +71,72 @@ def card_report():
             response.text
         )
 
-        if response.ok:
-            return "OK", 200
-
-        return "Send Failed", 500
-
     except Exception as e:
         print(
             "CARD REPORT ERROR:",
             repr(e)
         )
 
-        return "Internal Error", 500
+
+@app.route("/card-report", methods=["POST"])
+def card_report():
+    """
+    دریافت گزارش کارت شعر از بات کارت شعر.
+
+    درخواست کارت شعر مستقل است.
+    ارسال گزارش به مدیر در پس‌زمینه انجام می‌شود
+    و این مسیر منتظر نتیجه ارسال به مدیر نمی‌ماند.
+    """
+
+    provided_secret = request.headers.get(
+        "X-Card-Report-Secret",
+        ""
+    )
+
+    if provided_secret != CARD_REPORT_SECRET:
+        print("UNAUTHORIZED CARD REPORT")
+        return "Unauthorized", 401
+
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    user_id = data.get("user_id")
+    username = data.get("username") or "ندارد"
+    full_name = data.get("full_name") or "نام ثبت نشده"
+    poem = data.get("poem") or ""
+    design = data.get("design") or "نامشخص"
+    color = data.get("color") or "نامشخص"
+
+    if not user_id or not poem:
+        print(
+            "INVALID CARD REPORT:",
+            data
+        )
+        return "Bad Request", 400
+
+    report_text = (
+        "🖼️ کارت شعر جدید\n\n"
+        f"👤 نام: {full_name}\n"
+        f"🔗 نام کاربری: {username}\n"
+        f"🆔 شناسه: {user_id}\n\n"
+        f"🎨 طرح: {design}\n"
+        f"🌈 رنگ: {color}\n\n"
+        "📝 متن شعر:\n"
+        f"{poem}"
+    )
+
+    # ارسال گزارش بدون منتظر ماندن در مسیر HTTP
+    threading.Thread(
+        target=send_card_report_to_admin,
+        args=(report_text,),
+        daemon=True
+    ).start()
+
+    print("CARD REPORT ACCEPTED")
+
+    # فقط اعلام دریافت موفق درخواست
+    return "OK", 200
 
 
 @app.route("/webhook", methods=["POST"])
@@ -325,6 +348,3 @@ def webhook():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
-
-
