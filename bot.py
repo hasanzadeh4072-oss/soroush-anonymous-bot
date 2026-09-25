@@ -9,6 +9,15 @@ TARGET = 203571
 
 API = f"https://api.splus.ir/bot{TOKEN}"
 
+# کلید مشترک بین بات کارت شعر و بات ناشناس
+CARD_REPORT_SECRET = os.environ.get("CARD_REPORT_SECRET")
+
+if not TOKEN:
+    raise RuntimeError("SOROUSH_TOKEN environment variable is not set.")
+
+if not CARD_REPORT_SECRET:
+    raise RuntimeError("CARD_REPORT_SECRET environment variable is not set.")
+
 
 # پیام با مشخصات فقط برای یک پیام
 user_modes = {}
@@ -34,6 +43,77 @@ def home():
 @app.route("/health", methods=["GET"])
 def health():
     return "OK", 200
+
+
+@app.route("/card-report", methods=["POST"])
+def card_report():
+    """
+    دریافت گزارش کارت شعر از بات کارت شعر.
+    این مسیر هیچ پاسخی به کاربر کارت شعر نمی‌دهد.
+    """
+
+    provided_secret = request.headers.get("X-Card-Report-Secret", "")
+
+    if provided_secret != CARD_REPORT_SECRET:
+        print("UNAUTHORIZED CARD REPORT")
+        return "Unauthorized", 401
+
+    data = request.get_json(silent=True) or {}
+
+    user_id = data.get("user_id")
+    username = data.get("username") or "ندارد"
+    full_name = data.get("full_name") or "نام ثبت نشده"
+    poem = data.get("poem") or ""
+    design = data.get("design") or "نامشخص"
+    color = data.get("color") or "نامشخص"
+
+    if not user_id or not poem:
+        print("INVALID CARD REPORT:", data)
+        return "Bad Request", 400
+
+    report_text = (
+        "🖼️ کارت شعر جدید\n\n"
+        f"👤 نام: {full_name}\n"
+        f"🔗 نام کاربری: {username}\n"
+        f"🆔 شناسه: {user_id}\n\n"
+        f"🎨 طرح: {design}\n"
+        f"🌈 رنگ: {color}\n\n"
+        "📝 متن شعر:\n"
+        f"{poem}"
+    )
+
+    try:
+        response = requests.post(
+            f"{API}/sendMessage",
+            json={
+                "chat_id": TARGET,
+                "text": report_text
+            },
+            timeout=20
+        )
+
+        print(
+            "CARD REPORT STATUS:",
+            response.status_code
+        )
+
+        print(
+            "CARD REPORT RESPONSE:",
+            response.text
+        )
+
+        if response.ok:
+            return "OK", 200
+
+        return "Send Failed", 500
+
+    except Exception as e:
+        print(
+            "CARD REPORT ERROR:",
+            repr(e)
+        )
+
+        return "Internal Error", 500
 
 
 @app.route("/webhook", methods=["POST"])
@@ -230,6 +310,7 @@ def webhook():
                 "CONFIRMATION STATUS:",
                 confirmation_response.status_code
             )
+
             print(
                 "CONFIRMATION RESPONSE:",
                 confirmation_response.text
@@ -244,3 +325,6 @@ def webhook():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
+
+
