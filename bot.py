@@ -86,12 +86,9 @@ def send_card_report_to_admin(report_text):
         return None
 
 
-@app.route("/card-report", methods=["POST"])
-def card_report():
+def process_card_report():
     """
-    دریافت مستقل گزارش کارت شعر از بات کارت شعر.
-
-    گزارش پس از دریافت، مستقیماً برای مدیر ارسال می‌شود.
+    پردازش مستقل گزارش کارت شعر.
     """
 
     provided_secret = request.headers.get(
@@ -140,7 +137,6 @@ def card_report():
         f"{poem}"
     )
 
-    # ارسال مستقیم گزارش به مدیر
     response = send_card_report_to_admin(
         report_text
     )
@@ -160,6 +156,30 @@ def card_report():
     )
 
     return "Send Failed", 500
+
+
+# مسیر اصلی قبلی
+@app.route("/card-report", methods=["POST"])
+def card_report():
+
+    print(
+        "CARD REPORT REQUEST RECEIVED: /card-report",
+        flush=True
+    )
+
+    return process_card_report()
+
+
+# مسیر جایگزین
+@app.route("/card-report-v2", methods=["POST"])
+def card_report_v2():
+
+    print(
+        "CARD REPORT REQUEST RECEIVED: /card-report-v2",
+        flush=True
+    )
+
+    return process_card_report()
 
 
 @app.route("/webhook", methods=["POST"])
@@ -479,4 +499,22 @@ if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
         port=port
-            )
+    )
+
+
+
+بعد از Deploy این فایل، هنوز کارت شعر را تست نکن. اول باید آدرس گزارش در کد کارت شعر را از:
+
+
+/card-report
+
+
+به:
+
+
+/card-report-v2
+
+
+تغییر بدهیم.
+
+
