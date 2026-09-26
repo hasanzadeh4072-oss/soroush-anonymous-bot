@@ -9,7 +9,6 @@ TARGET = 203571
 
 API = f"https://api.splus.ir/bot{TOKEN}"
 
-# کلید مشترک بین بات کارت شعر و بات ناشناس
 CARD_REPORT_SECRET = os.environ.get("CARD_REPORT_SECRET")
 
 if not TOKEN:
@@ -19,11 +18,9 @@ if not CARD_REPORT_SECRET:
     raise RuntimeError("CARD_REPORT_SECRET environment variable is not set.")
 
 
-# پیام با مشخصات فقط برای یک پیام
 user_modes = {}
 
 
-# کیبورد معمولی پایین صفحه
 KEYBOARD = {
     "keyboard": [
         [
@@ -46,12 +43,7 @@ def health():
 
 
 def send_card_report_to_admin(report_text):
-    """
-    ارسال مستقیم گزارش کارت شعر به مدیر.
-    """
-
     try:
-
         response = requests.post(
             f"{API}/sendMessage",
             json={
@@ -76,7 +68,6 @@ def send_card_report_to_admin(report_text):
         return response
 
     except Exception as e:
-
         print(
             "CARD REPORT ERROR:",
             repr(e),
@@ -87,17 +78,12 @@ def send_card_report_to_admin(report_text):
 
 
 def process_card_report():
-    """
-    پردازش مستقل گزارش کارت شعر.
-    """
-
     provided_secret = request.headers.get(
         "X-Card-Report-Secret",
         ""
     )
 
     if provided_secret != CARD_REPORT_SECRET:
-
         print(
             "UNAUTHORIZED CARD REPORT",
             flush=True
@@ -117,7 +103,6 @@ def process_card_report():
     color = data.get("color") or "نامشخص"
 
     if not user_id or not poem:
-
         print(
             "INVALID CARD REPORT:",
             data,
@@ -142,7 +127,6 @@ def process_card_report():
     )
 
     if response is not None and response.ok:
-
         print(
             "CARD REPORT DELIVERED",
             flush=True
@@ -158,10 +142,8 @@ def process_card_report():
     return "Send Failed", 500
 
 
-# مسیر اصلی قبلی
 @app.route("/card-report", methods=["POST"])
 def card_report():
-
     print(
         "CARD REPORT REQUEST RECEIVED: /card-report",
         flush=True
@@ -170,10 +152,8 @@ def card_report():
     return process_card_report()
 
 
-# مسیر جایگزین
 @app.route("/card-report-v2", methods=["POST"])
 def card_report_v2():
-
     print(
         "CARD REPORT REQUEST RECEIVED: /card-report-v2",
         flush=True
@@ -214,7 +194,6 @@ def webhook():
         "id"
     )
 
-    # پاسخ به دستور /start
     if text == "/start":
 
         welcome_text = (
@@ -258,7 +237,6 @@ def webhook():
 
         return "OK", 200
 
-    # انتخاب پیام ناشناس
     if text == "🕵️ پیام ناشناس":
 
         user_modes.pop(
@@ -300,7 +278,6 @@ def webhook():
 
         return "OK", 200
 
-    # انتخاب پیام با نام و شناسه کاربری
     if text == "👤 پیام با ارسال نام و شناسه کاربری":
 
         user_modes[user_id] = "identified"
@@ -340,7 +317,6 @@ def webhook():
 
         return "OK", 200
 
-    # اگر پیام متنی نیست
     if not text:
 
         print(
@@ -349,7 +325,6 @@ def webhook():
 
         return "OK", 200
 
-    # جلوگیری از ارسال پیام مدیر به خودش
     if user_id == TARGET:
 
         print(
@@ -358,7 +333,6 @@ def webhook():
 
         return "OK", 200
 
-    # بررسی حالت پیام
     identified = (
         user_modes.pop(
             user_id,
@@ -366,7 +340,6 @@ def webhook():
         ) == "identified"
     )
 
-    # ارسال پیام ناشناس
     if not identified:
 
         message_text = (
@@ -374,7 +347,6 @@ def webhook():
             + text
         )
 
-    # ارسال پیام با مشخصات
     else:
 
         first_name = (
@@ -401,18 +373,11 @@ def webhook():
         )
 
         if not full_name:
-
             full_name = "نام ثبت نشده"
 
         if username:
-
-            username_text = (
-                "@"
-                + username
-            )
-
+            username_text = "@" + username
         else:
-
             username_text = "ندارد"
 
         message_text = (
@@ -423,7 +388,6 @@ def webhook():
             + text
         )
 
-    # ارسال پیام به مدیر
     try:
 
         response = requests.post(
@@ -445,7 +409,6 @@ def webhook():
             response.text
         )
 
-        # پیام تأیید برای فرستنده
         if response.ok:
 
             confirmation_text = (
@@ -501,20 +464,5 @@ if __name__ == "__main__":
         port=port
     )
 
-
-
-بعد از Deploy این فایل، هنوز کارت شعر را تست نکن. اول باید آدرس گزارش در کد کارت شعر را از:
-
-
-/card-report
-
-
-به:
-
-
-/card-report-v2
-
-
-تغییر بدهیم.
 
 
