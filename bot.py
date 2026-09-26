@@ -51,6 +51,7 @@ def send_card_report_to_admin(report_text):
     """
 
     try:
+
         response = requests.post(
             f"{API}/sendMessage",
             json={
@@ -90,9 +91,7 @@ def card_report():
     """
     دریافت مستقل گزارش کارت شعر از بات کارت شعر.
 
-    اگر Render خواب باشد، همین درخواست باعث بیدار شدن
-    سرویس می‌شود و پس از آماده شدن، گزارش برای مدیر
-    ارسال می‌شود.
+    گزارش پس از دریافت، مستقیماً برای مدیر ارسال می‌شود.
     """
 
     provided_secret = request.headers.get(
@@ -141,7 +140,7 @@ def card_report():
         f"{poem}"
     )
 
-    # ارسال واقعی گزارش به مدیر
+    # ارسال مستقیم گزارش به مدیر
     response = send_card_report_to_admin(
         report_text
     )
@@ -165,19 +164,39 @@ def card_report():
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    update = request.get_json(silent=True) or {}
 
-    print("RECEIVED UPDATE:", update)
+    update = request.get_json(
+        silent=True
+    ) or {}
 
-    message = update.get("message") or {}
-    text = message.get("text")
-    chat = message.get("chat") or {}
-    sender = message.get("from") or {}
+    print(
+        "RECEIVED UPDATE:",
+        update
+    )
 
-    user_id = chat.get("id")
+    message = update.get(
+        "message"
+    ) or {}
+
+    text = message.get(
+        "text"
+    )
+
+    chat = message.get(
+        "chat"
+    ) or {}
+
+    sender = message.get(
+        "from"
+    ) or {}
+
+    user_id = chat.get(
+        "id"
+    )
 
     # پاسخ به دستور /start
     if text == "/start":
+
         welcome_text = (
             "سلام 👋\n\n"
             "💌 اینجا می‌تونی نظرات، پیشنهادات یا هر پیامی که دوست داری رو "
@@ -189,6 +208,7 @@ def webhook():
         )
 
         try:
+
             response = requests.post(
                 f"{API}/sendMessage",
                 json={
@@ -199,19 +219,35 @@ def webhook():
                 timeout=20
             )
 
-            print("START RESPONSE STATUS:", response.status_code)
-            print("START RESPONSE:", response.text)
+            print(
+                "START RESPONSE STATUS:",
+                response.status_code
+            )
+
+            print(
+                "START RESPONSE:",
+                response.text
+            )
 
         except Exception as e:
-            print("SOROUSH API ERROR:", repr(e))
+
+            print(
+                "SOROUSH API ERROR:",
+                repr(e)
+            )
 
         return "OK", 200
 
     # انتخاب پیام ناشناس
     if text == "🕵️ پیام ناشناس":
-        user_modes.pop(user_id, None)
+
+        user_modes.pop(
+            user_id,
+            None
+        )
 
         try:
+
             response = requests.post(
                 f"{API}/sendMessage",
                 json={
@@ -225,19 +261,32 @@ def webhook():
                 timeout=20
             )
 
-            print("MODE RESPONSE STATUS:", response.status_code)
-            print("MODE RESPONSE:", response.text)
+            print(
+                "MODE RESPONSE STATUS:",
+                response.status_code
+            )
+
+            print(
+                "MODE RESPONSE:",
+                response.text
+            )
 
         except Exception as e:
-            print("SOROUSH API ERROR:", repr(e))
+
+            print(
+                "SOROUSH API ERROR:",
+                repr(e)
+            )
 
         return "OK", 200
 
     # انتخاب پیام با نام و شناسه کاربری
     if text == "👤 پیام با ارسال نام و شناسه کاربری":
+
         user_modes[user_id] = "identified"
 
         try:
+
             response = requests.post(
                 f"{API}/sendMessage",
                 json={
@@ -252,29 +301,54 @@ def webhook():
                 timeout=20
             )
 
-            print("MODE RESPONSE STATUS:", response.status_code)
-            print("MODE RESPONSE:", response.text)
+            print(
+                "MODE RESPONSE STATUS:",
+                response.status_code
+            )
+
+            print(
+                "MODE RESPONSE:",
+                response.text
+            )
 
         except Exception as e:
-            print("SOROUSH API ERROR:", repr(e))
+
+            print(
+                "SOROUSH API ERROR:",
+                repr(e)
+            )
 
         return "OK", 200
 
     # اگر پیام متنی نیست
     if not text:
-        print("NO TEXT FOUND")
+
+        print(
+            "NO TEXT FOUND"
+        )
+
         return "OK", 200
 
     # جلوگیری از ارسال پیام مدیر به خودش
     if user_id == TARGET:
-        print("MESSAGE FROM ADMIN - NOT FORWARDED")
+
+        print(
+            "MESSAGE FROM ADMIN - NOT FORWARDED"
+        )
+
         return "OK", 200
 
     # بررسی حالت پیام
-    identified = user_modes.pop(user_id, None) == "identified"
+    identified = (
+        user_modes.pop(
+            user_id,
+            None
+        ) == "identified"
+    )
 
     # ارسال پیام ناشناس
     if not identified:
+
         message_text = (
             "📩 پیام ناشناس:\n\n"
             + text
@@ -282,6 +356,7 @@ def webhook():
 
     # ارسال پیام با مشخصات
     else:
+
         first_name = (
             sender.get("first_name")
             or chat.get("first_name")
@@ -300,14 +375,24 @@ def webhook():
             or ""
         )
 
-        full_name = f"{first_name} {last_name}".strip()
+        full_name = (
+            f"{first_name} {last_name}"
+            .strip()
+        )
 
         if not full_name:
+
             full_name = "نام ثبت نشده"
 
         if username:
-            username_text = "@" + username
+
+            username_text = (
+                "@"
+                + username
+            )
+
         else:
+
             username_text = "ندارد"
 
         message_text = (
@@ -320,6 +405,7 @@ def webhook():
 
     # ارسال پیام به مدیر
     try:
+
         response = requests.post(
             f"{API}/sendMessage",
             json={
@@ -329,11 +415,19 @@ def webhook():
             timeout=20
         )
 
-        print("SEND MESSAGE STATUS:", response.status_code)
-        print("SEND MESSAGE RESPONSE:", response.text)
+        print(
+            "SEND MESSAGE STATUS:",
+            response.status_code
+        )
+
+        print(
+            "SEND MESSAGE RESPONSE:",
+            response.text
+        )
 
         # پیام تأیید برای فرستنده
         if response.ok:
+
             confirmation_text = (
                 "پیامت با موفقیت به شعرکده رسید. ✅\n\n"
                 "💌 اگر حرف دیگه‌ای داری، همین‌جا برامون بفرست.\n\n"
@@ -364,14 +458,25 @@ def webhook():
             )
 
     except Exception as e:
-        print("SOROUSH API ERROR:", repr(e))
+
+        print(
+            "SOROUSH API ERROR:",
+            repr(e)
+        )
 
     return "OK", 200
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
 
+    port = int(
+        os.environ.get(
+            "PORT",
+            10000
+        )
+    )
 
-
+    app.run(
+        host="0.0.0.0",
+        port=port
+            )
